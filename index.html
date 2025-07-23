@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Centra - Store all your thoughts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <h1>Centra</h1>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <ul class="nav-list">
+              <li class="nav-item">
+                <img src="assets/icons/home.svg" alt="Home" class="nav-icon" />
+                <span>Home</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <h3>Thought Spaces</h3>
+            <ul class="nav-list">
+              <li class="nav-item" data-category="Philosophy">
+                <img
+                  src="assets/icons/psychology_24dp_1F1F1F.svg"
+                  alt="Philosophy"
+                  class="nav-icon"
+                />
+                <span>Philosophy</span>
+                <img
+                  src="assets/icons/expand.svg"
+                  alt="Expand"
+                  class="expand-icon"
+                />
+              </li>
+              <li class="nav-item" data-category="Business">
+                <img
+                  src="assets/icons/work_history_24dp_1F1F1F.svg"
+                  alt="Business"
+                  class="nav-icon"
+                />
+                <span>Business</span>
+                <img
+                  src="assets/icons/expand.svg"
+                  alt="Expand"
+                  class="expand-icon"
+                />
+              </li>
+              <li class="nav-item" data-category="Health">
+                <img
+                  src="assets/icons/face_24dp_1F1F1F.svg"
+                  alt="Health"
+                  class="nav-icon"
+                />
+                <span>Health</span>
+                <img
+                  src="assets/icons/expand.svg"
+                  alt="Expand"
+                  class="expand-icon"
+                />
+              </li>
+              <li class="nav-item" data-category="Relationships">
+                <img
+                  src="assets/icons/people.svg"
+                  alt="Relationships"
+                  class="nav-icon"
+                />
+                <span>Relationships</span>
+                <img
+                  src="assets/icons/expand.svg"
+                  alt="Expand"
+                  class="expand-icon"
+                />
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <ul class="nav-list">
+              <li class="nav-item active">
+                <img
+                  src="assets/icons/add_circle_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
+                  alt="Add New Thought"
+                  class="nav-icon"
+                />
+                <span>Add New Thought</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section nav-bottom">
+            <ul class="nav-list">
+              <li class="nav-item">
+                <img
+                  src="assets/icons/settings.svg"
+                  alt="Settings"
+                  class="nav-icon"
+                />
+                <span>Settings</span>
+              </li>
+              <li class="nav-item">
+                <img
+                  src="assets/icons/question.svg"
+                  alt="Help"
+                  class="nav-icon"
+                />
+                <span>Help</span>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Profile section at bottom -->
+        <div class="profile-section" id="profileIcon">
+          <div class="profile-icon-with-arrow">
+            <div class="profile-icon-container">
+              <img
+                src="assets/icons/thinking-blob.svg"
+                alt="Profile"
+                class="profile-blob"
+              />
+            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="16px"
+              viewBox="0 -960 960 960"
+              width="16px"
+              fill="#9b9a97"
+              class="profile-arrow"
+            >
+              <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z" />
+            </svg>
+          </div>
+          <span class="profile-label">Account</span>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="search-container">
+          <div class="search-bar">
+            <img
+              src="assets/icons/aisparkle.svg"
+              alt="AI"
+              class="search-icon"
+            />
+            <input
+              type="text"
+              placeholder="Search for your thoughts"
+              class="search-input"
+            />
+            <div class="search-actions">
+              <button class="action-btn mic-btn">
+                <img
+                  src="assets/icons/mic_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
+                  alt="Voice input"
+                  class="btn-icon"
+                />
+              </button>
+              <button class="action-btn add-btn">
+                <img
+                  src="assets/icons/add_circle_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"
+                  alt="Add thought"
+                  class="btn-icon"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-area">
+          <div class="add-thought-screen">
+            <div class="thinking-blob-container">
+              <img
+                src="assets/icons/thinking-blob.svg"
+                alt="Add Thought"
+                class="thinking-blob"
+                id="thinkingBlob"
+              />
+            </div>
+            <h2>What's on your mind?</h2>
+            <p>Speak to add a new thought</p>
+          </div>
+
+          <div class="welcome-message" style="display: none">
+            <h2>Welcome to your mind palace</h2>
+            <p>Start by adding your first thought using voice or text above</p>
+          </div>
+
+          <div class="recent-thoughts-section" style="display: none">
+            <div class="section-header">
+              <img
+                src="assets/icons/history.svg"
+                alt="Recent"
+                class="section-icon"
+              />
+              <h3>Recent Thoughts</h3>
+            </div>
+            <div class="recent-thoughts-grid">
+              <div class="thought-card">
+                <span class="thought-category">Philosophy</span>
+                <p class="thought-preview">What is consciousness?</p>
+                <span class="thought-time">2 hours ago</span>
+              </div>
+              <div class="thought-card">
+                <span class="thought-category">Business</span>
+                <p class="thought-preview">Product market fit strategy</p>
+                <span class="thought-time">5 hours ago</span>
+              </div>
+              <div class="thought-card">
+                <span class="thought-category">Health</span>
+                <p class="thought-preview">Morning routine optimization</p>
+                <span class="thought-time">1 day ago</span>
+              </div>
+              <div class="thought-card">
+                <span class="thought-category">Relationships</span>
+                <p class="thought-preview">Communication patterns</p>
+                <span class="thought-time">2 days ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Overlay for thought lists -->
+    <div class="overlay" id="thoughtOverlay">
+      <div class="overlay-content">
+        <div class="overlay-header">
+          <h3 id="overlayTitle">Category Thoughts</h3>
+          <button class="close-btn" id="closeOverlay">&times;</button>
+        </div>
+        <div class="overlay-body">
+          <ul class="thought-list" id="thoughtList">
+            <!-- Thoughts will be populated here -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile overlay menu -->
+    <div class="profile-overlay" id="profileOverlay">
+      <div class="profile-menu">
+        <div class="profile-menu-item" id="loginMenuItem">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="16px"
+            viewBox="0 -960 960 960"
+            width="16px"
+            fill="#1f1f1f"
+            class="menu-icon"
+          >
+            <path
+              d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
+            />
+          </svg>
+          <span>Login</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
