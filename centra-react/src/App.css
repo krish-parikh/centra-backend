@@ -959,3 +959,199 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Real-time transcript display */
+.transcript-display {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 600px;
+    min-height: 120px;
+    background: #f7f6f3;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e9e9e7;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.transcript-content {
+    text-align: left;
+    line-height: 1.6;
+    font-size: 16px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.final-transcript {
+    color: #37352f;
+    font-weight: 500;
+}
+
+.interim-transcript {
+    color: #787774;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.listening-indicator {
+    color: #9b9a97;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.listening-indicator::before {
+    content: "🎤";
+    font-size: 18px;
+    animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-4px);
+    }
+    60% {
+        transform: translateY(-2px);
+    }
+}
+
+/* Speech interface - appears smoothly when recording starts */
+.speech-interface {
+    margin-top: 32px;
+    width: 100%;
+    max-width: 600px;
+    animation: slideInUp 0.4s ease-out;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.done-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    animation: slideInUp 0.5s ease-out 0.2s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.done-btn {
+    padding: 12px 32px;
+    background: #2383e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(35, 131, 226, 0.2);
+}
+
+.done-btn:hover {
+    background: #1f73c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(35, 131, 226, 0.3);
+}
+
+.done-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(35, 131, 226, 0.2);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Edit interface - appears when user clicks Done */
+.edit-interface {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.edit-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 20px;
+    border: 2px solid #e9e9e7;
+    border-radius: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #37352f;
+    background: #ffffff;
+    resize: vertical;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.edit-textarea:focus {
+    outline: none;
+    border-color: #2383e2;
+    box-shadow: 0 0 0 3px rgba(35, 131, 226, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.edit-textarea::placeholder {
+    color: #9b9a97;
+    font-style: italic;
+}
+
+/* Update done button when disabled */
+.done-btn:disabled {
+    background: #e9e9e7;
+    color: #9b9a97;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    filter: blur(0.5px);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.done-btn:disabled:hover {
+    background: #e9e9e7;
+    color: #9b9a97;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    filter: blur(0.5px);
+    opacity: 0.6;
+}
+
+/* When enabled, remove blur with smooth transition */
+.done-btn:not(:disabled) {
+    filter: blur(0px);
+    opacity: 1;
+    transition: all 0.3s ease;
+}

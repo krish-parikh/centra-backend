@@ -22,6 +22,11 @@ const MainApp = () => {
   const [currentView, setCurrentView] = useState("add-thought");
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState("");
+  const [showTextBox, setShowTextBox] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableText, setEditableText] = useState("");
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayCategory, setOverlayCategory] = useState("");
   const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
@@ -38,6 +43,7 @@ const MainApp = () => {
 
   const recognition = useRef(null);
   const sidebarRef = useRef(null);
+  const currentTranscriptRef = useRef("");
   const { signOut, user } = useAuth();
 
   // Function to fetch graph data from Supabase
@@ -88,23 +94,46 @@ const MainApp = () => {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition.current = new SpeechRecognition();
-      recognition.current.continuous = false;
-      recognition.current.interimResults = false;
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
       recognition.current.lang = "en-US";
 
       recognition.current.onstart = () => {
         setIsRecording(true);
+        setShowTextBox(true);
+        setTranscript("");
+        setInterimTranscript("");
+        currentTranscriptRef.current = "";
         console.log("Voice recording started...");
       };
 
       recognition.current.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        console.log("Voice input received:", transcript);
-        // Handle the voice input for adding new thoughts
+        let finalTranscript = "";
+        let interim = "";
+
+        for (let i = 0; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript;
+          } else {
+            interim += result[0].transcript;
+          }
+        }
+
+        setTranscript(finalTranscript);
+        setInterimTranscript(interim);
+        
+        // Update ref with the most recent transcript
+        currentTranscriptRef.current = finalTranscript;
+        
+        if (finalTranscript) {
+          console.log("Final transcript:", finalTranscript);
+        }
       };
 
       recognition.current.onend = () => {
         setIsRecording(false);
+        setInterimTranscript("");
         console.log("Voice recording ended.");
       };
 
@@ -212,9 +241,7 @@ const MainApp = () => {
       return;
     }
 
-    if (isRecording) {
-      recognition.current.stop();
-    } else {
+    if (!isRecording && !showTextBox) {
       recognition.current.start();
     }
   };
@@ -227,6 +254,37 @@ const MainApp = () => {
       // Show temporary feedback
       alert("Thought added successfully!");
     }
+  };
+
+  const handleDone = () => {
+    // Stop recognition if still running
+    if (recognition.current && isRecording) {
+      recognition.current.stop();
+    }
+    
+    // Set up editing mode with current transcript
+    setIsRecording(false);
+    setIsEditing(true);
+    setEditableText(transcript.trim());
+    setInterimTranscript(""); // Clear interim results
+  };
+
+  const handleSubmit = () => {
+    const finalThought = editableText.trim();
+    if (finalThought) {
+      console.log("Submitting thought:", finalThought);
+      // Dummy logic - simulate saving thought
+      alert(`Thought submitted: "${finalThought}"`);
+    }
+    
+    // Reset all states
+    setShowTextBox(false);
+    setIsRecording(false);
+    setIsEditing(false);
+    setTranscript("");
+    setEditableText("");
+    setInterimTranscript("");
+    currentTranscriptRef.current = "";
   };
 
   const handleInputKeyDown = (e) => {
@@ -401,6 +459,54 @@ const MainApp = () => {
           </div>
           <h2>What's on your mind?</h2>
           <p>Speak to add a new thought</p>
+          
+          {/* Text box and Done button - appears when recording starts */}
+          {showTextBox && (
+            <div className="speech-interface">
+              {!isEditing ? (
+                // Recording mode - show live transcript
+                <div className="transcript-display">
+                  <div className="transcript-content">
+                    {transcript && (
+                      <span className="final-transcript">{transcript}</span>
+                    )}
+                    {interimTranscript && (
+                      <span className="interim-transcript">{interimTranscript}</span>
+                    )}
+                    {!transcript && !interimTranscript && (
+                      <span className="listening-indicator">Listening...</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // Editing mode - show editable textarea
+                <div className="edit-interface">
+                  <textarea
+                    className="edit-textarea"
+                    value={editableText}
+                    onChange={(e) => setEditableText(e.target.value)}
+                    placeholder="Edit your thought..."
+                    rows={4}
+                    autoFocus
+                  />
+                </div>
+              )}
+              
+              <div className="done-button-container">
+                <button
+                  className="done-btn"
+                  onClick={isEditing ? handleSubmit : handleDone}
+                  disabled={
+                    isEditing 
+                      ? !editableText.trim() 
+                      : !transcript.trim()
+                  }
+                >
+                  {isEditing ? "Submit" : "Done"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
