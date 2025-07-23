@@ -13,6 +13,22 @@ body {
     line-height: 1.5;
 }
 
+/* Empty state styles */
+.empty-state {
+    text-align: center;
+    color: #9b9a97;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.empty-thoughts {
+    text-align: center;
+    color: #9b9a97;
+    font-style: italic;
+    padding: 20px;
+    list-style: none;
+}
+
 /* Authentication styles */
 .auth-container {
     display: flex;

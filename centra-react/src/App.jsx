@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -12,80 +12,10 @@ import "./App.css";
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import { supabase } from './lib/supabase';
 
-// Sample thoughts data
-const thoughtsData = {
-  Philosophy: [
-    "What is consciousness?",
-    "Free will vs determinism",
-    "The nature of reality",
-    "Ethics in AI development",
-    "The meaning of existence",
-  ],
-  Business: [
-    "Product market fit strategy",
-    "Team scaling challenges",
-    "Revenue optimization ideas",
-    "Customer acquisition tactics",
-    "Competitive analysis framework",
-  ],
-  Health: [
-    "Morning routine optimization",
-    "Nutrition and energy levels",
-    "Exercise consistency tips",
-    "Sleep quality improvement",
-    "Stress management techniques",
-  ],
-  Relationships: [
-    "Communication patterns",
-    "Building deeper connections",
-    "Conflict resolution strategies",
-    "Emotional intelligence",
-    "Trust and vulnerability",
-  ],
-};
-
-// Initial React Flow nodes for Philosophy category
-const initialNodes = [
-  {
-    id: "1",
-    type: "default",
-    position: { x: 250, y: 50 },
-    data: { label: "What is consciousness?" },
-  },
-  {
-    id: "2",
-    type: "default",
-    position: { x: 100, y: 150 },
-    data: { label: "Free will vs determinism" },
-  },
-  {
-    id: "3",
-    type: "default",
-    position: { x: 400, y: 150 },
-    data: { label: "The nature of reality" },
-  },
-  {
-    id: "4",
-    type: "default",
-    position: { x: 200, y: 250 },
-    data: { label: "Ethics in AI development" },
-  },
-  {
-    id: "5",
-    type: "default",
-    position: { x: 300, y: 350 },
-    data: { label: "The meaning of existence" },
-  },
-];
-
-const initialEdges = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e1-3", source: "1", target: "3" },
-  { id: "e2-4", source: "2", target: "4" },
-  { id: "e3-4", source: "3", target: "4" },
-  { id: "e4-5", source: "4", target: "5" },
-];
+// Categories for thought organization
+const thoughtCategories = ["Philosophy", "Business", "Health", "Relationships"];
 
 const MainApp = () => {
   const [activeNavItem, setActiveNavItem] = useState("Add New Thought");
@@ -99,13 +29,56 @@ const MainApp = () => {
   const [profileOverlayVisible, setProfileOverlayVisible] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [showReactFlow, setShowReactFlow] = useState(false);
+  const [graphData, setGraphData] = useState(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const recognition = useRef(null);
   const sidebarRef = useRef(null);
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+
+  // Function to fetch graph data from Supabase
+  const fetchGraphData = async (category) => {
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('thoughts')
+        .select('graph')
+        .eq('user_id', user.id)
+        .eq('category', category)
+        .single();
+
+      if (error) {
+        console.error('Error fetching graph data:', error);
+        return null;
+      }
+
+      return data?.graph;
+    } catch (err) {
+      console.error('Error:', err);
+      return null;
+    }
+  };
+
+  // Function to load graph data into React Flow
+  const loadGraphData = async (category) => {
+    const data = await fetchGraphData(category);
+    
+    if (data && data.nodes && data.edges) {
+      setGraphData(data);
+      setNodes(data.nodes);
+      setEdges(data.edges);
+      return true;
+    }
+    
+    // If no data, clear the graph
+    setGraphData(null);
+    setNodes([]);
+    setEdges([]);
+    return false;
+  };
 
   // Initialize speech recognition
   React.useEffect(() => {
@@ -145,10 +118,10 @@ const MainApp = () => {
     [setEdges]
   );
 
-  const handleNavItemClick = (item, category = null) => {
+  const handleNavItemClick = async (item, category = null) => {
     setActiveNavItem(item);
 
-    if (category && thoughtsData[category]) {
+    if (category && thoughtCategories.includes(category)) {
       const isExpanded = expandedItems.has(category);
 
       if (isExpanded) {
@@ -164,33 +137,8 @@ const MainApp = () => {
         setOverlayCategory(category);
         setOverlayVisible(true);
 
-        // Generate React Flow nodes for this category
-        const categoryThoughts = thoughtsData[category];
-        const newNodes = categoryThoughts.map((thought, index) => ({
-          id: `${category}-${index}`,
-          type: "default",
-          position: {
-            x: 100 + (index % 3) * 200,
-            y: 100 + Math.floor(index / 3) * 100,
-          },
-          data: { label: thought },
-        }));
-
-        const newEdges = [];
-        // Create some connections between thoughts
-        for (let i = 0; i < newNodes.length - 1; i++) {
-          if (Math.random() > 0.5) {
-            // Random connections
-            newEdges.push({
-              id: `e${i}-${i + 1}`,
-              source: newNodes[i].id,
-              target: newNodes[i + 1].id,
-            });
-          }
-        }
-
-        setNodes(newNodes);
-        setEdges(newEdges);
+        // Load graph data from database
+        await loadGraphData(category);
         setShowReactFlow(true);
         
         // Position overlay next to sidebar
@@ -413,26 +361,7 @@ const MainApp = () => {
             <h3>Recent Thoughts</h3>
           </div>
           <div className="recent-thoughts-grid">
-            <div className="thought-card">
-              <span className="thought-category">Philosophy</span>
-              <p className="thought-preview">What is consciousness?</p>
-              <span className="thought-time">2 hours ago</span>
-            </div>
-            <div className="thought-card">
-              <span className="thought-category">Business</span>
-              <p className="thought-preview">Product market fit strategy</p>
-              <span className="thought-time">5 hours ago</span>
-            </div>
-            <div className="thought-card">
-              <span className="thought-category">Health</span>
-              <p className="thought-preview">Morning routine optimization</p>
-              <span className="thought-time">1 day ago</span>
-            </div>
-            <div className="thought-card">
-              <span className="thought-category">Relationships</span>
-              <p className="thought-preview">Communication patterns</p>
-              <span className="thought-time">2 days ago</span>
-            </div>
+            <p className="empty-state">No recent thoughts yet. Start by adding your first thought!</p>
           </div>
         </div>
       );
@@ -479,7 +408,7 @@ const MainApp = () => {
           <div className="nav-section">
             <h3>Thought Spaces</h3>
             <ul className="nav-list">
-              {Object.keys(thoughtsData).map((category) => (
+              {thoughtCategories.map((category) => (
                 <li
                   key={category}
                   className={`nav-item ${
@@ -687,21 +616,23 @@ const MainApp = () => {
             </div>
             <div className="overlay-body">
               <ul className="thought-list">
-                {thoughtsData[overlayCategory]?.map((thought, index) => (
+                {nodes.map((node) => (
                   <li
-                    key={index}
+                    key={node.id}
                     onClick={() => {
-                      console.log(`Selected thought: ${thought}`);
+                      console.log(`Selected thought: ${node.data.label}`);
                       // Center on this specific node in React Flow
                       if (reactFlowRef.current) {
-                        const nodeId = `${overlayCategory}-${index}`;
-                        reactFlowRef.current.setCenter(nodes.find(n => n.id === nodeId)?.position?.x || 0, nodes.find(n => n.id === nodeId)?.position?.y || 0, { zoom: 1.2 });
+                        reactFlowRef.current.setCenter(node.position.x, node.position.y, { zoom: 1.2 });
                       }
                     }}
                   >
-                    {thought}
+                    {node.data.label}
                   </li>
                 ))}
+                {nodes.length === 0 && (
+                  <li className="empty-thoughts">No thoughts in this category yet.</li>
+                )}
               </ul>
             </div>
           </div>
