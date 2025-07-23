@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -30,6 +30,8 @@ const MainApp = () => {
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [showReactFlow, setShowReactFlow] = useState(false);
   const [graphData, setGraphData] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [nodeCardVisible, setNodeCardVisible] = useState(false);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -117,6 +119,27 @@ const MainApp = () => {
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  // Handle node click to show card
+  const onNodeClick = useCallback((_event, node) => {
+    setSelectedNode(node);
+    setNodeCardVisible(true);
+    
+    // Pan to the clicked node
+    if (reactFlowRef.current) {
+      reactFlowRef.current.setCenter(node.position.x, node.position.y, { zoom: 1.2, duration: 800 });
+    }
+  }, []);
+
+  // Function to pan to a specific node
+  const panToNode = useCallback((nodeId) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (node && reactFlowRef.current) {
+      setSelectedNode(node);
+      setNodeCardVisible(true);
+      reactFlowRef.current.setCenter(node.position.x, node.position.y, { zoom: 1.2, duration: 800 });
+    }
+  }, [nodes]);
 
   const handleNavItemClick = async (item, category = null) => {
     setActiveNavItem(item);
@@ -240,17 +263,21 @@ const MainApp = () => {
         document.querySelector(".search-input")?.focus();
       }
       if (e.key === "Escape") {
-        setSearchQuery("");
-        setOverlayVisible(false);
-        setProfileOverlayVisible(false);
-        setExpandedItems(new Set());
-        setShowReactFlow(false);
+        if (nodeCardVisible) {
+          setNodeCardVisible(false);
+        } else {
+          setSearchQuery("");
+          setOverlayVisible(false);
+          setProfileOverlayVisible(false);
+          setExpandedItems(new Set());
+          setShowReactFlow(false);
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [nodeCardVisible]);
 
   const getWelcomeMessage = () => {
     switch (activeNavItem) {
@@ -317,6 +344,7 @@ const MainApp = () => {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onNodeClick={onNodeClick}
             fitView
             fitViewOptions={{ padding: 0.2 }}
           >
@@ -324,6 +352,34 @@ const MainApp = () => {
             <MiniMap />
             <Background variant="dots" gap={12} size={1} />
           </ReactFlow>
+          
+          {/* Node Card Display */}
+          {nodeCardVisible && selectedNode && (
+            <div className="node-card">
+              <div className="node-card-header">
+                <h3>{selectedNode.data.label}</h3>
+                <button 
+                  className="close-btn"
+                  onClick={() => setNodeCardVisible(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="node-card-content">
+                <p>{selectedNode.data.content || "No description available."}</p>
+                {selectedNode.data.category && (
+                  <div className="node-card-meta">
+                    <span className="node-category">{selectedNode.data.category}</span>
+                    {selectedNode.data.created_at && (
+                      <span className="node-date">
+                        {new Date(selectedNode.data.created_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -619,13 +675,8 @@ const MainApp = () => {
                 {nodes.map((node) => (
                   <li
                     key={node.id}
-                    onClick={() => {
-                      console.log(`Selected thought: ${node.data.label}`);
-                      // Center on this specific node in React Flow
-                      if (reactFlowRef.current) {
-                        reactFlowRef.current.setCenter(node.position.x, node.position.y, { zoom: 1.2 });
-                      }
-                    }}
+                    onClick={() => panToNode(node.id)}
+                    className="thought-item"
                   >
                     {node.data.label}
                   </li>
